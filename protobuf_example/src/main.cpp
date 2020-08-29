@@ -1,60 +1,85 @@
 #include <google/protobuf/stubs/common.h>
 #include <iostream>
 #include "addressbook.pb.h"
+#include "../3rd_party/asio/asio.hpp"
 
-void CreateAddress(tutorial::Person* person)
+using asio::ip::tcp;
+
+const int max_length = 1024;
+
+void session(tcp::socket sock)
 {
-    int id = 1;
-    person->set_id( id );
-
-	std::string name = "Test user";
-	person->set_name(name);
-
-	std::string email = "email@test.com";
-	person->set_email( email );
-}
-
-void PrintAdressBook(const tutorial::AddressBook& book)
-{
-	std::string delimiter(20, '-');
-	std::cout << delimiter << "\n";
-
-	auto people = book.people();
-	for( auto person : people )
+	try
 	{
-		std::cout << "ID: " << person.id() << "\n";
-		std::cout << "Name: " << person.name() << "\n";
-		std::cout << "Email: " << person.email() << "\n";
-	}
+		for (;;)
+		{
+			asio::error_code error;
+			char bytes[max_length];
 
-	std::cout << delimiter << "\n";
+			size_t length = sock.read_some(asio::buffer(bytes), error);
+			if (error == asio::error::eof)
+				break; // Connection closed cleanly by peer.
+			else if (error)
+				throw asio::system_error(error);// Some other error.
+
+			std::cout << "Received chars: " << bytes << std::endl << "Length: " << length << std::endl;
+
+			tutorial::Person person;
+			person.ParseFromString(bytes);
+
+			std::cout << person.name();
+			std::cout << person.email();
+			std::cout << person.id() << std::endl;
+
+			std::string s;
+
+			//person.SerializeToArray(bytes, length);
+
+			person.SerializeToString(&s);
+
+			std::cout << "Serialized:" << s;
+
+			asio::write(sock, asio::buffer(s));
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Exception in thread: " << e.what() << "\n";
+	}
 }
 
-int main( int argc, char** argv )
+void server(asio::io_context& io_context, unsigned short port)
 {
-	// Verify that the version of the library that we linked against is
-	// compatible with the version of the headers we compiled against.
+	tcp::acceptor a(io_context, tcp::endpoint(tcp::v4(), port));
+	for (;;)
+	{
+		std::thread(session, a.accept()).detach();
+	}
+}
+
+int main(int argc, char* argv[])
+{
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-	tutorial::AddressBook address_book;
-	tutorial::AddressBook deserialized_book;
-
-	CreateAddress(address_book.add_people());
-
-	std::cout << "\nBefore serialization:\n";
-	PrintAdressBook(address_book);
-
-	std::string serialized;
-	address_book.SerializeToString(&serialized);
-
-	if( deserialized_book.ParseFromString(serialized) )
+	try
 	{
-		std::cout << "\nAfter deserialization:\n";
-		PrintAdressBook(deserialized_book);
+		if (argc != 2)
+		{
+			std::cerr << "Usage: " << argv[0] << " <port>\n";
+			//return 1;
+		}
+
+		asio::io_context io_context;
+
+		server(io_context, 12349); //std::atoi(argv[1])
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Exception: " << e.what() << "\n";
 	}
 
-	// Optional:  Delete all global objects allocated by libprotobuf.
 	google::protobuf::ShutdownProtobufLibrary();
+	system("pause");
 
-    return 0;
+	return 0;
 }
