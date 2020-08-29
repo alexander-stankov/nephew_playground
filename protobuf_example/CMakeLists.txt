@@ -9,6 +9,9 @@ if(WIN32)
   set(protobuf_MODULE_COMPATIBLE TRUE)
 endif()
 
+# On MacOS clang complains if this is not set
+set (CMAKE_CXX_STANDARD 11)
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/asio/ )
 
 add_definitions(-DASIO_STANDALONE)

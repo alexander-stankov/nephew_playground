@@ -1,31 +1,57 @@
+
 #include <google/protobuf/stubs/common.h>
 #include <iostream>
 #include "addressbook.pb.h"
-#include "../3rd_party/asio/asio.hpp"
+
+//NOTE: So we've already have include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/asio/ )
+// why do you include this like this and not just #include "asio.hpp"??
+//#include "../3rd_party/asio/asio.hpp"
+
+#include "asio.hpp"
 
 using asio::ip::tcp;
 
-const int max_length = 1024;
+//NOTE: this one should be constexpr. It is evaluated at compile time and has other advantages
+//also it is better for this kind of constants to be UPPER_CASE e.g MAX_LENGTH.
+//also what is MAX_LENGTH? the length of a string maybe. In this use case it should be BUFFER_SIZE
+//const int max_length = 1024;
+constexpr int BUFFER_SIZE = 1024;
 
 void session(tcp::socket sock)
 {
 	try
 	{
+		//NOTE: isn't while(true) more clear???
 		for (;;)
 		{
 			asio::error_code error;
-			char bytes[max_length];
+			//NOTE: bytes is a bad name. It should be more descriptive.
+			//in this case this is a buffer used to send/receive messages so buffer
+			//would be better name. Also always initialize stack allocated arrays,
+			//because otherwise they have undefined value e.g. not zero
+			//char bytes[max_length];
+            char buffer[BUFFER_SIZE] = {0};
 
-			size_t length = sock.read_some(asio::buffer(bytes), error);
+            //size_t length = sock.read_some(asio::buffer(buffer), error);
+            size_t length = sock.receive(asio::buffer(buffer));
+
+			//NOTE: its better to have braces ALWAYS even for one-liners
 			if (error == asio::error::eof)
+			{
 				break; // Connection closed cleanly by peer.
+			}
 			else if (error)
+			{
 				throw asio::system_error(error);// Some other error.
+			}
 
-			std::cout << "Received chars: " << bytes << std::endl << "Length: " << length << std::endl;
+			//NOTE: we don't want to use std::endl at all because it flushes the stream e.g. has performance implications
+			//use "\n" instead
+			std::cout << "Received chars: " << buffer << "\n" << "Length: " << length << "\n";
 
 			tutorial::Person person;
-			person.ParseFromString(bytes);
+			person.ParseFromString(buffer);
+			//perse.ParseFrom
 
 			std::cout << person.name();
 			std::cout << person.email();
@@ -37,7 +63,7 @@ void session(tcp::socket sock)
 
 			person.SerializeToString(&s);
 
-			std::cout << "Serialized:" << s;
+			std::cout << "Serialized:" << s << "\n";
 
 			asio::write(sock, asio::buffer(s));
 		}
@@ -51,6 +77,8 @@ void session(tcp::socket sock)
 void server(asio::io_context& io_context, unsigned short port)
 {
 	tcp::acceptor a(io_context, tcp::endpoint(tcp::v4(), port));
+
+	//NOTE: isn't while(true) more clear???
 	for (;;)
 	{
 		std::thread(session, a.accept()).detach();
@@ -63,11 +91,14 @@ int main(int argc, char* argv[])
 
 	try
 	{
-		if (argc != 2)
-		{
-			std::cerr << "Usage: " << argv[0] << " <port>\n";
-			//return 1;
-		}
+		//NOTE: so we're terminating if the user hasn't entered argument
+		//but discarding the argument afterwards????
+
+		// if (argc != 2)
+		// {
+		// 	std::cerr << "Usage: " << argv[0] << " <port>\n";
+		// 	//return 1;
+		// }
 
 		asio::io_context io_context;
 
