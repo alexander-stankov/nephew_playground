@@ -9,6 +9,10 @@ if(WIN32)
   set(protobuf_MODULE_COMPATIBLE TRUE)
 endif()
 
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/asio/ )
+
+add_definitions(-DASIO_STANDALONE)
+
 # Get all the .proto files in the proto subdirectory
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 
