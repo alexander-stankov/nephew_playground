@@ -1,7 +1,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <iostream>
-#include "addressbook.pb.h"
+#include "game_protocol.pb.h"
 
 //NOTE: So we've already have include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/asio/ )
 // why do you include this like this and not just #include "asio.hpp"??
@@ -45,27 +45,66 @@ void session(tcp::socket sock)
 				throw asio::system_error(error);// Some other error.
 			}
 
-			//NOTE: we don't want to use std::endl at all because it flushes the stream e.g. has performance implications
-			//use "\n" instead
-			std::cout << "Received chars: " << buffer << "\n" << "Length: " << length << "\n";
+			GameProtocol::Packet msgPacket;
 
-			tutorial::Person person;
-			person.ParseFromString(buffer);
-			//perse.ParseFrom
+			bool bRes = msgPacket.ParseFromString(buffer);
 
-			std::cout << person.name();
-			std::cout << person.email();
-			std::cout << person.id() << std::endl;
+			if( !bRes )
+			{
+				std::cerr << "Error unknown message\n";
+				//TODO(alex): return??
+			}
 
-			std::string s;
+			GameProtocol::Packet response;
 
-			//person.SerializeToArray(bytes, length);
+			if( msgPacket.has_login() )
+			{
+				//We've got login packet
+                std::cout << "Got login name: " << msgPacket.login().name()
+                          << " email: " << msgPacket.login().email()
+                          << " password: " << msgPacket.login().password();
 
-			person.SerializeToString(&s);
+				auto status = response.mutable_status();
+				status->set_error(::GameProtocol::Status_ErrorType::Status_ErrorType_OK);
+            }
+			else if( msgPacket.has_register_() )
+			{
+				//We've got register packet
+				std::cout << "Got register name: " << msgPacket.register_().name()
+                          << " email: " << msgPacket.register_().email()
+                          << " password: " << msgPacket.register_().password();
 
-			std::cout << "Serialized:" << s << "\n";
+				auto status = response.mutable_status();
+				status->set_error(::GameProtocol::Status_ErrorType::Status_ErrorType_OK);
+			}
+			else if( msgPacket.has_status() )
+			{
+				//We've got status packet
+				switch( msgPacket.status().error() )
+				{
+					case GameProtocol::Status::ErrorType::Status_ErrorType_OK:
+						std::cout << "Got status: OK\n";
+						break;
+                    case GameProtocol::Status::ErrorType::Status_ErrorType_Error:
+						std::cout << "Got status: Error\n";
+                        break;
+                    case GameProtocol::Status::ErrorType::Status_ErrorType_InvalidData:
+						std::cout << "Got status: Invalid Data\n";
+                        break;
+                }
+				if( msgPacket.status().has_error_string() )
+				{
+					std::cerr << "Error message: " << msgPacket.status().error_string() << "\n";
+				}
+			}
 
-			asio::write(sock, asio::buffer(s));
+			//Just to flush the stream
+			std::cout << std::endl;
+
+			std::string strResponse = response.SerializeAsString();
+			//TODO(alex): error checking?
+
+			asio::write(sock, asio::buffer(strResponse));
 		}
 	}
 	catch (std::exception& e)

@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Root.gd" type="Script" id=1]
+
+[node name="Root" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false,
+"_edit_vertical_guides_": [ 215.611 ]
+}
+
+[node name="Container" type="VBoxContainer" parent="."]
+anchor_left = 0.499343
+anchor_top = 0.501072
+anchor_right = 0.499343
+anchor_bottom = 0.501072
+margin_left = -100.0
+margin_top = -90.0
+margin_right = 100.0
+margin_bottom = 90.0
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="Connect" type="Button" parent="Container"]
+margin_right = 200.0
+margin_bottom = 20.0
+text = "Connect"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Register" type="Button" parent="Container"]
+margin_top = 24.0
+margin_right = 200.0
+margin_bottom = 44.0
+text = "Register"
+
+[node name="Login" type="Button" parent="Container"]
+margin_top = 48.0
+margin_right = 200.0
+margin_bottom = 68.0
+text = "Login"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="StatusLabel" type="Label" parent="."]
+anchor_left = -0.00046978
+anchor_right = -0.00046978
+margin_left = 216.947
+margin_top = 127.699
+margin_right = 416.947
+margin_bottom = 141.699
+text = "Status: Disconnected"
+__meta__ = {
+"_edit_use_anchors_": false
+}

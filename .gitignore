@@ -30,3 +30,14 @@
 *.exe
 *.out
 *.app
+
+# Ignore the build folder
+build
+
+# Ignore clangd index folder
+.clangd
+.cache
+compile_commands.json
+
+# MacOS
+.DS_Store

@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+package GameProtocol;
+
+message Login
+{
+	required string name = 1;
+	required string email = 2;
+	required string password  = 3;
+}
+
+message Register
+{
+	required string name = 1;
+	required string email = 2;
+	required string password = 3;
+}
+
+message Status
+{
+	enum ErrorType
+	{
+		OK = 0;
+		Error = 1;
+		InvalidData = 2;
+	}
+	required ErrorType error = 1;
+	optional string error_string = 2;
+}
+
+/*
+	Used to send exactly one message, this way we can just
+	receive the data and after that use switch or something similar
+	to see the message type
+*/
+message Packet
+{
+	oneof Data
+	{
+		Login login = 1;
+		Register register = 2;
+		Status status = 3;
+	}
+}
