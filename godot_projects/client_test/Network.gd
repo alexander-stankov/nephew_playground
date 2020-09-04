@@ -71,8 +71,6 @@ func send():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	# NOTE: this is NOT the way to do this, but since I don't care atm
-	get_tree().get_root().find_node("Connect", true, false).connect("pressed", self, "send")
 	thread.start(self, "_handle_network", "localhost")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
