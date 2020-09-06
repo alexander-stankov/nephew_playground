@@ -63,9 +63,18 @@ void session(tcp::socket sock)
                 std::cout << "Got login name: " << msgPacket.login().name()
                           << " email: " << msgPacket.login().email()
                           << " password: " << msgPacket.login().password();
-
+				
 				auto status = response.mutable_status();
-				status->set_error(::GameProtocol::Status_ErrorType::Status_ErrorType_OK);
+
+				if (msgPacket.login().email() == "misho@gmail.com")
+				{
+					status->set_error(::GameProtocol::Status_ErrorType::Status_ErrorType_OK);
+				}
+				else
+				{
+					status->set_error(::GameProtocol::Status_ErrorType::Status_ErrorType_InvalidData);
+				}
+				
             }
 			else if( msgPacket.has_register_() )
 			{
