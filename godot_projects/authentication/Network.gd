@@ -31,36 +31,37 @@ func sendPacket(packet):
 	network_client.put_data(packet.to_bytes());
 
 func waitAuthenticationResponse():
-	#needed print, otherwise the first time it will not work 
-	print("Some text");
-	var bytes_avail = network_client.get_available_bytes()
-	var status_label = get_tree().get_root().find_node("Status", true, false)
-	if bytes_avail > 0:
-		var buffer = network_client.get_data(bytes_avail);
-		print("Read " + str(bytes_avail) + " bytes")
-		if buffer[0] == OK:
-			var msgPacket = gameProto.Packet.new()
-			var result_code = msgPacket.from_bytes(buffer[1]);
-			if result_code == gameProto.PB_ERR.NO_ERRORS:
-				if msgPacket.has_status():
-					var errType = msgPacket.get_status().ErrorType
-					match msgPacket.get_status().get_error():
-						errType.OK:
-							print("ok");
-							status_label.text = "Logged in"
-							get_tree().change_scene("res://Authentication.tscn");
-						errType.Error:
-							if msgPacket.get_status().has_error_string():
-								print("ERROR")
-								status_label.text = "Error: " + msgPacket.get_status().error_string()
-							else:
-								print("ERROR");
-								status_label.text = "Error"
-						errType.InvalidData:
-							print("Invalid Data");
-							status_label.text = "Invalid Data sent"
-	else:
-		yield(get_tree().create_timer(1.0), "timeout")
+	var waitingForResponse = true;
+	while(waitingForResponse):
+		var bytes_avail = network_client.get_available_bytes()
+		var status_label = get_tree().get_root().find_node("Status", true, false)
+		if bytes_avail > 0:
+			var buffer = network_client.get_data(bytes_avail);
+			print("Read " + str(bytes_avail) + " bytes")
+			if buffer[0] == OK:
+				var msgPacket = gameProto.Packet.new()
+				var result_code = msgPacket.from_bytes(buffer[1]);
+				if result_code == gameProto.PB_ERR.NO_ERRORS:
+					if msgPacket.has_status():
+						waitingForResponse = false;
+						var errType = msgPacket.get_status().ErrorType
+						match msgPacket.get_status().get_error():
+							errType.OK:
+								print("ok");
+								status_label.text = "Logged in"
+								get_tree().change_scene("res://Authentication.tscn");
+							errType.Error:
+								if msgPacket.get_status().has_error_string():
+									print("ERROR")
+									status_label.text = "Error: " + msgPacket.get_status().error_string()
+								else:
+									print("ERROR");
+									status_label.text = "Error"
+							errType.InvalidData:
+								print("Invalid Data");
+								status_label.text = "Invalid Data sent"
+		else:
+			yield(get_tree().create_timer(1.0), "timeout")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
