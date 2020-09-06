@@ -22,7 +22,7 @@ func _on_Login_pressed():
 	msgLogin.set_email(email);
 	msgLogin.set_password(password);
 	#Lets keep this way for now till we decide whether to use email or username
-	msgLogin.set_name("");
+	msgLogin.set_name("misho");
 		
-	get_node("/root/Network").sendPacket(msgLogin);
+	get_node("/root/Network").sendPacket(msgPacket);
 	get_node("/root/Network").waitAuthenticationResponse();
