@@ -51,7 +51,3 @@ add_definitions(-DSQLITE_ENABLE_RTREE)
 add_definitions(-DSQLITE_ENABLE_FTS4)
 add_definitions(-DSQLITE_ENABLE_FTS5)
 add_definitions(-DSQLITE_ENABLE_JSON1)
-
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
-#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
-#target_link_libraries(${PROJECT_NAME} sqlite3)#${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
