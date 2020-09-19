@@ -13,6 +13,7 @@ endif()
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/asio/ )
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite/)
 
 add_definitions(-DASIO_STANDALONE)
 
@@ -31,8 +32,26 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 add_subdirectory(src)
+add_subdirectory(3rd_party/sqlite)
 
-add_executable(${PROJECT_NAME} ${SRC_LIST} ${PROTO_SRCS} ${PROTO_HDRS})
+add_library(test STATIC ${SQLITE_LIST})
+
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${PROTO_SRCS} ${PROTO_HDRS} ${SQLITE_LIST})
 
 # link to protobuf library
 target_link_libraries(${PROJECT_NAME} ${Protobuf_LIBRARIES})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+if (UNIX)
+	target_link_libraries(sqlite dl pthread m)
+endif (UNIX)
+
+add_definitions(-DSQLITE_ENABLE_RTREE)
+add_definitions(-DSQLITE_ENABLE_FTS4)
+add_definitions(-DSQLITE_ENABLE_FTS5)
+add_definitions(-DSQLITE_ENABLE_JSON1)
+
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
+#link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
+#target_link_libraries(${PROJECT_NAME} sqlite3)#${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/sqlite)
