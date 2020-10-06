@@ -5,7 +5,7 @@ Status:
 	Required ErrorType type
 	Optional string error_string
 
-Packet:
+Packet: - use to recognise which message is sent
 	Oneof Data – Login, Register, Status, JoinRoom, Roomdata, ChangeOnBoard, AddFriend, AcceptFriendRequest, RandomCard
 
 ***Authentication***
