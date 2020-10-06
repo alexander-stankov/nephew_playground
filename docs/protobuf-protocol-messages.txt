@@ -1,0 +1,62 @@
+Protobuf Protocol Messages
+
+
+Status:
+	Required ErrorType type
+	Optional string error_string
+
+Packet:
+	Oneof Data – Login, Register, Status
+
+***Authentication***
+
+Register:
+	Required string name
+	Required string email
+	Required string password
+
+Login:
+	Required string email
+	Required string password
+
+***Setting up a room***
+
+JoinRoom:
+	optional string friendId //type can be changed
+	reserved int playedTime //feature, make better match-ups based on played time
+
+Player:
+	required int64 id
+	required string name
+	required Integer hp
+	Card cards repeated 
+
+enum CardType:
+	//add Blank type to represent the blank cards on the board
+	Fire = 0;
+	Water = 1;
+	Earth = 2;
+	Air = 3;
+
+Card:
+	required CardType type
+
+RoomData: - sent by the server to the players
+	required Player players repeated
+	required Card firstCard
+
+***Messages during the Game***
+
+ChangeOnBoard:
+	Card cards repeated
+
+RandomCard:
+	required Card card
+
+***Making Friends***
+
+AddFriend:
+	required int64 id
+
+AcceptFriendRequest:
+	required int64 id
