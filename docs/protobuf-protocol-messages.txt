@@ -6,7 +6,7 @@ Status:
 	Optional string error_string
 
 Packet:
-	Oneof Data – Login, Register, Status
+	Oneof Data – Login, Register, Status, JoinRoom, Roomdata, ChangeOnBoard, AddFriend, AcceptFriendRequest, RandomCard
 
 ***Authentication***
 
